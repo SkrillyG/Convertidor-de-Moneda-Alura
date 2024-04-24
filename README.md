@@ -20,7 +20,7 @@ El proyecto se contruyo utilisando las siguientes herramientas:
 - **Gson:** Utilizado para traducir los elementos JSON en elementosw java. 
 - **HttpClient:** Crea solicitudes Http a la API Exchange Rates.
 
-# Como utilizarl el Convertidor de Moneda Alura:
+# Como utilizar el Convertidor de Moneda Alura:
 
 1. Deveras abrir el archivo Main y en seguida ejecutarlo.
 
