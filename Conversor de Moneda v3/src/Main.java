@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
-    private static final String KEY_PATTERN = "(?i)[0-9a-f]{32}";
+    private static final String KEY_PATTERN = "(?i)[0-9a-f]{24,32}";
 
     public static void main(String[] args) {
         String apiKey = System.getenv("EXCHANGE_RATE_API_KEY");
@@ -14,7 +14,7 @@ public class Main {
             return;
         }
         if (!apiKey.matches(KEY_PATTERN)) {
-            System.err.println("[!] La API key debe tener 32 caracteres hexadecimales.");
+            System.err.println("[!] La API key debe tener entre 24 y 32 caracteres hexadecimales.");
             return;
         }
 

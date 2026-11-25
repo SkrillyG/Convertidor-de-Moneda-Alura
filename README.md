@@ -57,7 +57,7 @@ source ~/.zshrc
 EXCHANGE_RATE_API_KEY=TU_API_KEY
 ```
 
-La key debe tener **32 caracteres hexadecimales**. El programa la valida al iniciar.
+La key debe tener entre **24 y 32 caracteres hexadecimales**. El programa la valida al iniciar.
 
 ## ▶️ Ejecución
 
