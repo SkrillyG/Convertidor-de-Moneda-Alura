@@ -1,0 +1,6 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: "/Conversor de Moneda v3"
+    schedule:
+      interval: weekly

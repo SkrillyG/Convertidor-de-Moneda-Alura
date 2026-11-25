@@ -1,31 +1,141 @@
-# Challenge de Alura Latam (Orientacion de objetos y uso de APIS) - BACK - END - Conversor de Monedas Alura
+# 💱 Convertidor de Monedas — Alura Latam
 
-Este proyecto utiliza la API llamada Exchange Rate = Tipo de Cambio en español la cual nos brinda informacion del cambio actual de la moneda de diferentes paises. 
+[![Java](https://img.shields.io/badge/Java-17%2B-orange)](https://www.java.com)
+[![Maven](https://img.shields.io/badge/Maven-Gson%20%7C%20JUnit-blue)](https://maven.apache.org)
+[![Tests](https://github.com/SkrillyG/Convertidor-de-Moneda-Alura/actions/workflows/ci.yml/badge.svg)](https://github.com/SkrillyG/Convertidor-de-Moneda-Alura/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-## Descripcion
+Aplicación de consola para convertir monedas en tiempo real usando la API de ExchangeRate-API. Challenge de **Orientación a Objetos y consumo de APIs** de Alura Latam.
 
-El proyecto lo realice con las siguientes 3 clases:
+## ✨ Características
 
-1. **Main:** Esta clases se encarga de ejecutar la aplicacion en la terminal con los datos brindados de las demas clases ademas de mostrar el menu y mensajes predeterminados con souts.
+| Característica | Detalle |
+|---|---|
+| 🔐 Credencial segura | La API key se lee de una variable de entorno, nunca del código |
+| 🛡️ Autenticación Bearer | La key viaja en una cabecera HTTP, no en la URL |
+| ⚡ Doble caché | Memoria + archivo en disco; los datos se actualizan una vez al día |
+| 🔁 Reintentos | Hasta 2 reintentos ante errores `429` y `5xx` |
+| 🌍 Catálogo completo | Puedes elegir cualquier par de monedas soportado por la API |
+| 📊 Historial | Guarda las conversiones realizadas durante la sesión |
+| 🧪 Pruebas | 10 tests JUnit + cobertura JaCoCo + CI en GitHub Actions |
 
-2. **ConverterRates:** La siguiente clase es la encargada de realizar la comunuicacion con la API Exchange Rates para optener los cambios de moneda solicitados.
+## 📑 Índice
 
-3. **TargetCurrency:** Esta clase funciona como traductor de la informacion que regresa la API y nos da las formas para acceder a sus datos.
+- [Requisitos](#requisitos)
+- [Configuración](#configuración)
+- [Ejecución](#ejecución)
+- [Uso](#uso)
+- [Arquitectura](#arquitectura)
+- [Pruebas y calidad](#pruebas-y-calidad)
+- [Seguridad](#seguridad)
+- [Autores](#autores)
 
-## Realizacion:
+## ✅ Requisitos
 
-El proyecto se contruyo utilisando las siguientes herramientas:
+- **JDK 17** o superior
+- **IntelliJ IDEA** (recomendado) o Maven CLI
+- Una **API key gratuita** de [ExchangeRate-API](https://app.exchangerate-api.com/sign-up)
 
-- **Intellij IDEA:** Utilisado para escribir todo el lenguaje de programacion Java. 
-- **Gson:** Utilizado para traducir los elementos JSON en elementosw java. 
-- **HttpClient:** Crea solicitudes Http a la API Exchange Rates.
+> El proyecto usa Maven. IntelliJ descarga las dependencias automáticamente al abrir `pom.xml`.
 
-# Como utilizar el Convertidor de Moneda Alura:
+## ⚙️ Configuración
 
-1. Deveras abrir el archivo Main y en seguida ejecutarlo.
+La API key **no se guarda en el repositorio**. Se lee de `EXCHANGE_RATE_API_KEY`.
 
-2. Sigue las instrucciones unicamente deberas elegir el tipo de convercion que quieras realizar (Dato los tipos de cambios fueron realisadoes en base a conocidos Alura latam brazil y mi persona que soy de Costa Rica).
+**macOS / zsh:**
 
-3. Escribe la cantidad que desees convertir., NO UTILICES LETRAS NI NUMEROS NEGATIVOS YA QUE ESTO CONLLEVA A UN ERROR !!
+```bash
+echo 'export EXCHANGE_RATE_API_KEY="TU_API_KEY"' >> ~/.zshrc
+source ~/.zshrc
+```
 
-## Trabajo realizado por SkrillyG(Aarón Aguero E).
+**IntelliJ IDEA:**
+
+`Run → Edit Configurations… → Environment variables`
+
+```
+EXCHANGE_RATE_API_KEY=TU_API_KEY
+```
+
+La key debe tener **32 caracteres hexadecimales**. El programa la valida al iniciar.
+
+## ▶️ Ejecución
+
+### Desde IntelliJ
+
+Abre `Main.java` y ejecútalo. Acepta **Load Maven projects** si aparece el aviso.
+
+### Desde terminal
+
+```bash
+cd "Conversor de Moneda v3"
+mvn compile exec:java
+```
+
+### JAR ejecutable
+
+```bash
+cd "Conversor de Moneda v3"
+mvn package
+./run.sh
+```
+
+El JAR queda en `target/convertidor-monedas-1.0.0.jar`.
+
+## 🎮 Uso
+
+| Opción | Acción |
+|---|---|
+| `1` — `6` | Conversiones rápidas: USD↔CRC, BRL↔CRC, ARS↔USD |
+| `7` | Catálogo completo: elige origen y destino entre todas las monedas soportadas |
+| `8` | Ver el historial de conversiones de la sesión |
+| `9` | Salir |
+
+Ejemplo de salida:
+
+```text
+  100 USD equivale a 51.200 CRC
+  Tasa: 1 USD = 512 CRC
+  Datos actualizados: Tue, 24 Nov 2026 00:00:00 +0000
+```
+
+## 🏗️ Arquitectura
+
+| Clase | Responsabilidad |
+|---|---|
+| `Main` | Menú, validación de la key, historial y selección de pares |
+| `ConverterRates` | Interacción con el usuario y formato de salida |
+| `ExchangeRateClient` | HTTP, Bearer, reintentos, caché en memoria y disco |
+| `TargetCurrency` | Modelo JSON de tasas |
+| `SupportedCodesResponse` | Modelo JSON del catálogo de monedas |
+| `CurrencyPair` | Enum de los pares rápidos |
+| `CurrencyCalculator` | Lógica pura de conversión y validación |
+
+```text
+Usuario → Main → ConverterRates → ExchangeRateClient → ExchangeRate-API
+                       ↓                  ↓
+                  Historial        Caché (memoria + disco)
+```
+
+## 🧪 Pruebas y calidad
+
+```bash
+cd "Conversor de Moneda v3"
+mvn test
+```
+
+- **10 tests JUnit 5**, incluyendo un servidor HTTP local para simular respuestas reales
+- **JaCoCo** genera el reporte de cobertura en `target/site/jacoco/`
+- **GitHub Actions** ejecuta `mvn test` en cada push
+- **Dependabot** revisa las dependencias semanalmente
+
+## 🔒 Seguridad
+
+- La key original estaba expuesta en el código y en el historial de Git; fue **revocada y reemplazada**
+- Autenticación mediante **Bearer token**, sin credenciales en la URL
+- `.gitignore` excluye `.env`, `.idea/`, `out/`, `target/` y archivos temporales
+- Ninguna credencial forma parte del código fuente
+
+## 👤 Autores
+
+**SkrillyG** (Aarón Aguero E.) — Challenge Alura Latam.

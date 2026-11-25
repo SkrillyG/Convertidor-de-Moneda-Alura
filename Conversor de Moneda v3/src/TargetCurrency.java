@@ -1,7 +1,11 @@
+import com.google.gson.annotations.SerializedName;
 import java.util.Map;
 
-public class targetCurrency {
+public class TargetCurrency {
     private String result;
+
+    @SerializedName("error-type")
+    private String errorType;
     private String documentation;
     private String terms_of_use;
     private long time_last_update_unix;
@@ -15,31 +19,35 @@ public class targetCurrency {
         return result;
     }
 
+    public String getErrorType() {
+        return errorType;
+    }
+
     public String getDocumentation() {
         return documentation;
     }
 
-    public String getTerms_of_use() {
+    public String getTermsOfUse() {
         return terms_of_use;
     }
 
-    public long getTime_last_update_unix() {
+    public long getTimeLastUpdateUnix() {
         return time_last_update_unix;
     }
 
-    public String getTime_last_update_utc() {
+    public String getTimeLastUpdateUtc() {
         return time_last_update_utc;
     }
 
-    public long getTime_next_update_unix() {
+    public long getTimeNextUpdateUnix() {
         return time_next_update_unix;
     }
 
-    public String getTime_next_update_utc() {
+    public String getTimeNextUpdateUtc() {
         return time_next_update_utc;
     }
 
-    public String getBase_code() {
+    public String getBaseCode() {
         return base_code;
     }
 

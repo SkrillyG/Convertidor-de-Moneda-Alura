@@ -1,62 +1,56 @@
-import com.google.gson.Gson;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
 public class ConverterRates {
-    private static final String API_BASE_URL = "https://v6.exchangerate-api.com/v6/";
-    private final String apiKey;
+    private static final NumberFormat NUMBER = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CR"));
+
+    private final ExchangeRateClient client;
 
     public ConverterRates(String apiKey) {
-        this.apiKey = apiKey;
+        this(new ExchangeRateClient(apiKey));
     }
 
-    public void changesCoin(String currencyOfOri, String targetCurrency) {
-        try {
-            URI address = buildURI(currencyOfOri);
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(address)
-                    .build();
+    public ConverterRates(ExchangeRateClient client) {
+        this.client = client;
+    }
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                Gson gson = new Gson();
-                targetCurrency answer = gson.fromJson(response.body(), targetCurrency.class);
-
-                if (answer != null && answer.getConversionRates() != null) {
-                    Map<String, Double> conversionRates = answer.getConversionRates();
-
-                    if (conversionRates.containsKey(targetCurrency)) {
-                        double rate = conversionRates.get(targetCurrency);
-                        Scanner reading = new Scanner(System.in);
-                        System.out.print("Por favor, introduce la amount a convertir (" + currencyOfOri + " a " + targetCurrency + "): ");
-                        double amount = reading.nextDouble();
-                        double amountConverted = amount * rate;
-                        System.out.println(amount + " " + currencyOfOri + " equivale a " + amountConverted + " " + targetCurrency);
-                    } else {
-                        System.out.println("No se encontró la rate de conversión para " + targetCurrency);
-                    }
-                } else {
-                    System.out.println("Esta API no contiene los datos buscados.");
-                }
-            } else {
-                System.out.println("¡Error! al realizar la solicitud. RAZON!!: " + response.statusCode());
-            }
-        } catch (IOException | InterruptedException | URISyntaxException e) {
-            System.err.println("Error al realizar la solicitud: " + e.getMessage());
+    public String convert(String fromCurrency, String toCurrency, Scanner reading) {
+        ExchangeRateClient.RateData data = client.getRates(fromCurrency);
+        if (data == null) {
+            return null;
         }
+        Double rate = data.rates().get(toCurrency);
+        if (rate == null) {
+            System.out.println("[!] No hay tasa de conversión para " + toCurrency);
+            return null;
+        }
+
+        System.out.print("Cantidad a convertir: ");
+        double amount;
+        try {
+            amount = Double.parseDouble(reading.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("[!] Cantidad inválida. Escribe un número, por ejemplo: 100");
+            return null;
+        }
+        if (!CurrencyCalculator.isValidAmount(amount)) {
+            System.out.println("[!] La cantidad debe ser mayor que 0.");
+            return null;
+        }
+
+        double converted = CurrencyCalculator.convert(amount, rate);
+        String line = NUMBER.format(amount) + " " + fromCurrency + " equivale a " + NUMBER.format(converted) + " " + toCurrency;
+        System.out.println();
+        System.out.println("  " + line);
+        System.out.println("  Tasa: 1 " + fromCurrency + " = " + NUMBER.format(rate) + " " + toCurrency);
+        System.out.println("  Datos actualizados: " + (data.lastUpdate() == null ? "desconocido" : data.lastUpdate()));
+        System.out.println();
+        return line;
     }
 
-    private URI buildURI(String currencyOfOri) throws URISyntaxException {
-        String address = API_BASE_URL + apiKey + "/latest/" + currencyOfOri;
-        return new URI(address);
+    public Map<String, String> supportedCodes() {
+        return client.getSupportedCodes();
     }
 }
